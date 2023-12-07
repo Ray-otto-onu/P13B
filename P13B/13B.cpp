@@ -4,31 +4,29 @@
 using namespace std;
 
 int dayOfWeek(int month, int day, int year);
-string getDayName(int dayOfWeek);
+void displayCalendar(int month, int year);
 
 int main() {
-    string inputMonth, inputDay, inputYear;
+    string inputMonth, inputYear;
     do {
-        cout << "Enter a date (MM DD YYYY) or Q to quit: ";
+        cout << "Enter a month and year (MM YYYY) or Q to quit: ";
         cin >> inputMonth;
 
         if (inputMonth == "Q" || inputMonth == "q") {
             break;
         }
 
-        cin >> inputDay >> inputYear;
+        cin >> inputYear;
 
         int month = stoi(inputMonth);
-        int day = stoi(inputDay);
         int year = stoi(inputYear);
 
-        if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1582) {
-            cout << "Invalid input. Please enter a valid date." << endl;
+        if (month < 1 || month > 12 || year < 1582) {
+            cout << "Invalid input. Month should be in the range [1..12] and year should be >= 1582." << endl;
             continue;
         }
 
-        int dayOfWeekValue = dayOfWeek(month, day, year);
-        cout << getDayName(dayOfWeekValue) << ", " << month << " " << day << ", " << year << endl;
+        displayCalendar(month, year);
 
     } while (true);
 
@@ -47,7 +45,30 @@ int dayOfWeek(int month, int day, int year) {
     return h;
 }
 
-string getDayName(int dayOfWeek) {
-    static const string dayNames[] = { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
-    return dayNames[dayOfWeek];
+void displayCalendar(int month, int year) {
+
+    string calendar[] = { " 1  2  3  4  5  6  7  ",
+                         " 8  9 10 11 12 13 14 ",
+                         "15 16 17 18 19 20 21 ",
+                         "22 23 24 25 26 27 28 ",
+                         "29 30 31             " };
+
+    int firstDay = dayOfWeek(month, 1, year);
+
+    cout << " Mo Tu We Th Fr Sa Su" << endl;
+
+    for (int i = 0; i < firstDay; ++i) {
+        cout << "   ";
+    }
+
+    for (int i = 0; i < 6; ++i) {
+        cout << calendar[i].substr(3 * firstDay, 21);
+
+        if (i == 4 && calendar[i].length() > 21) {
+            cout << calendar[i].substr(21);
+        }
+
+        cout << endl;
+    }
+    cout << endl;
 }
