@@ -1,68 +1,53 @@
 #include <iostream>
 #include <string>
-#include <iomanip>
+#include <cmath>
 using namespace std;
 
-bool isLeapYear(int year);
-string getMonthName(int month);
-string daysInMonth(int month, int year);
+int dayOfWeek(int month, int day, int year);
+string getDayName(int dayOfWeek);
 
 int main() {
-    string inputMonth, inputYear;
+    string inputMonth, inputDay, inputYear;
     do {
-        cout << "Enter a month and year (MM YYYY) or Q to quit: ";
+        cout << "Enter a date (MM DD YYYY) or Q to quit: ";
         cin >> inputMonth;
 
         if (inputMonth == "Q" || inputMonth == "q") {
             break;
         }
 
-        cin >> inputYear;
+        cin >> inputDay >> inputYear;
 
         int month = stoi(inputMonth);
+        int day = stoi(inputDay);
         int year = stoi(inputYear);
 
-        if (month < 1 || month > 12 || year < 1582) {
-            cout << "Invalid input. Month should be in the range [1..12] and year should be >= 1582." << endl;
+        if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1582) {
+            cout << "Invalid input. Please enter a valid date." << endl;
             continue;
         }
 
-        cout << getMonthName(month) << " " << year << " has " << daysInMonth(month, year) << " days." << endl;
+        int dayOfWeekValue = dayOfWeek(month, day, year);
+        cout << getDayName(dayOfWeekValue) << ", " << month << " " << day << ", " << year << endl;
 
     } while (true);
 
     return 0;
 }
 
-bool isLeapYear(int year) {
-    if (year < 1582) {
-        cout << "Year should be >= 1582 for Gregorian calendar." << endl;
-        return false;
+int dayOfWeek(int month, int day, int year) {
+    if (month <= 2) {
+        month += 12;
+        year -= 1;
     }
 
-    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    int h = (day + static_cast<int>(floor((13 * (month + 1)) / 5)) + year + static_cast<int>(floor(year / 4)) -
+        static_cast<int>(floor(year / 100)) + static_cast<int>(floor(year / 400))) % 7;
+
+    return h;
 }
 
-string getMonthName(int month) {
-    static const string monthNames[] = { "January", "February", "March", "April", "May", "June",
-                                        "July", "August", "September", "October", "November", "December" };
-    return monthNames[month - 1];
-}
-
-string daysInMonth(int month, int year) {
-    int days = 0;
-
-    switch (month) {
-    case 1: case 3: case 5: case 7: case 8: case 10: case 12:
-        days = 31;
-        break;
-    case 4: case 6: case 9: case 11:
-        days = 30;
-        break;
-    case 2:
-        days = isLeapYear(year) ? 29 : 28;
-        break;
-    }
-
-    return to_string(days);
+string getDayName(int dayOfWeek) {
+    static const string dayNames[] = { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+    return dayNames[dayOfWeek];
 }
