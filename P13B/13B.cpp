@@ -1,74 +1,105 @@
 #include <iostream>
+#include <fstream>
 #include <string>
-#include <cmath>
+#include <sstream>
+#include <iomanip>
+
 using namespace std;
 
-int dayOfWeek(int month, int day, int year);
-void displayCalendar(int month, int year);
+int getMonthNumber(const string& monthName);
+void displayCalendar(int month, int year, ostream& outputStream);
+
+
 
 int main() {
-    string inputMonth, inputYear;
+    string inputMonthAndYear;
     do {
-        cout << "Enter a month and year (MM YYYY) or Q to quit: ";
-        cin >> inputMonth;
+        cout << "Enter a month and year (Month YYYY) or Q to quit: ";
+        getline(cin, inputMonthAndYear);
+        cout << endl;
 
-        if (inputMonth == "Q" || inputMonth == "q") {
+        if (inputMonthAndYear == "Q" || inputMonthAndYear == "q") {
             break;
         }
 
-        cin >> inputYear;
+        istringstream iss(inputMonthAndYear);
+        string inputMonth, inputYear;
+        iss >> inputMonth >> inputYear;
 
-        int month = stoi(inputMonth);
         int year = stoi(inputYear);
 
-        if (month < 1 || month > 12 || year < 1582) {
-            cout << "Invalid input. Month should be in the range [1..12] and year should be >= 1582." << endl;
+        if (year < 1582) {
+            cout << "Invalid input. Year should be >= 1582." << endl;
             continue;
         }
 
-        displayCalendar(month, year);
+        int month = getMonthNumber(inputMonth);
+        if (month == -1) {
+            cout << "Invalid month name. Please enter a valid full month name." << endl;
+            continue;
+        }
+
+        cout << inputMonthAndYear << endl;
+
+        ofstream outputFile(inputMonth.substr(0, 3) + inputYear + ".txt");
+
+        if (!outputFile.is_open()) {
+            cout << "Error opening output file." << endl;
+            return 1;
+        }
+
+        outputFile << inputMonthAndYear << endl;
+
+        displayCalendar(month, year, cout);
+        displayCalendar(month, year, outputFile);
+
+        cout << "Output file: " << inputMonth.substr(0, 3) + inputYear + ".txt" << endl;
+
+        outputFile.close();
 
     } while (true);
 
     return 0;
 }
 
-int dayOfWeek(int month, int day, int year) {
-    if (month <= 2) {
-        month += 12;
-        year -= 1;
+int main();
+int getMonthNumber(const string& monthName) {
+    string monthNames[] = { "January", "February", "March", "April", "May", "June",
+                           "July", "August", "September", "October", "November", "December" };
+
+    for (int i = 0; i < 12; ++i) {
+        if (monthName == monthNames[i]) {
+            return i + 1;
+        }
     }
-
-    int h = (day + static_cast<int>(floor((13 * (month + 1)) / 5)) + year + static_cast<int>(floor(year / 4)) -
-        static_cast<int>(floor(year / 100)) + static_cast<int>(floor(year / 400))) % 7;
-
-    return h;
+    return -1;
 }
 
-void displayCalendar(int month, int year) {
+void displayCalendar(int month, int year, ostream& outputStream) {
+    const int daysInMonth[] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-    string calendar[] = { " 1  2  3  4  5  6  7  ",
-                         " 8  9 10 11 12 13 14 ",
-                         "15 16 17 18 19 20 21 ",
-                         "22 23 24 25 26 27 28 ",
-                         "29 30 31             " };
-
-    int firstDay = dayOfWeek(month, 1, year);
-
-    cout << " Mo Tu We Th Fr Sa Su" << endl;
+    int firstDay = (6 + 9 * month + 3 * (month + 1) / 10 + year + year / 4 - year / 100 + year / 400 - (month < 3 ? 1 : 0)) % 7;
+  
+    if (firstDay == 0)
+    firstDay = (1 + 4 * month + 3 * (month + 1) / 10 + year + year / 4 - year / 100 + year / 400 - (month < 3 ? 1 : 0)) % 7; 
+   
+    outputStream << " Su Mo Tu We Th Fr Sa" << endl;
 
     for (int i = 0; i < firstDay; ++i) {
-        cout << "   ";
+        outputStream << "   ";
     }
 
-    for (int i = 0; i < 6; ++i) {
-        cout << calendar[i].substr(3 * firstDay, 21);
+    for (int day = 1; day <= daysInMonth[month]; ++day) {
+        outputStream << " " << setw(2) << day;
 
-        if (i == 4 && calendar[i].length() > 21) {
-            cout << calendar[i].substr(21);
+        if ((firstDay + day) % 7 == 0) {
+            outputStream << endl;
         }
-
-        cout << endl;
     }
-    cout << endl;
+
+    if ((firstDay + daysInMonth[month]) % 7 != 0) {
+        outputStream << endl;
+    }
+
+    outputStream << endl;
 }
